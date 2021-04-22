@@ -87,8 +87,8 @@ class Avatar {
     if (this.currentFrames.length == 0) {
       this.action();
       if (this.opponent.helth == 0) this.gamearea.gameOver(this);
-      if (this.currentAnimation == "forward") this.moveForward();
       this.distance = this.getDistance();
+      if (this.currentAnimation == "forward") this.moveForward();
       if (!this.animationFrames) this.setAnimation("idle");
       this.loadAnimation();
     } else if (this.currentFrames.length == 4) {
@@ -108,7 +108,6 @@ class Avatar {
   }
   loadAnimation() {
     if (this.animationFrames.animation == "backward") this.moveBackward();
-    if (this.animationFrames.animation == "backward");
     this.currentAnimation = this.animationFrames.animation;
     this.currentFrames = this.animationFrames.frames;
     this.animationFrames = undefined;
