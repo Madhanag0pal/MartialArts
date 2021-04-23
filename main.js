@@ -5,7 +5,7 @@ class GameArea {
     this.width = this.canvas.width;
     this.height = this.canvas.height;
     this.components = [];
-    this.keys = [];
+    this.keys = []; // active Keys
     this.interval = null;
     this.animationSpeed = 80;
     // this.backGround = "images/background.jpg";
@@ -36,13 +36,14 @@ class GameArea {
     location.reload();
   }
 }
+//
 function animate() {
-  myGameArea.context.save();
+  myGameArea.context.save(); // stores the blank state context
   myGameArea.clear();
   myGameArea.components.forEach((component) => {
     component.update();
   });
-  myGameArea.context.restore();
+  myGameArea.context.restore(); // restores the blank state context
 }
 class Avatar {
   constructor(gamearea, images, flip = false) {
@@ -53,11 +54,11 @@ class Avatar {
     this.left = this.flip ? 680 : 0;
     this.moveSpeed = this.flip ? -120 : 120;
     this.position = this.left;
-    this.images = images;
-    this.controls = {};
-    this.animationFrames;
-    this.currentAnimation = "";
-    this.currentFrames = [];
+    this.images = images; // stores all Animation and related Images
+    this.controls = {}; // maps keys from the keyboard to action
+    this.animationFrames; // stores the next animation
+    this.currentAnimation = ""; // current animatin name
+    this.currentFrames = []; // current animation frames
     this.helth = 100;
   }
   // sets the controls for the player
@@ -68,10 +69,9 @@ class Avatar {
     this.controls[kick] = "kick";
     this.controls[punch] = "punch";
   }
-
+  // sets the opponent
   setOpponent(opponent, name) {
     this.opponent = opponent;
-    this.distance = this.getDistance();
     if (name) this.name = name;
     else {
       let p = this.flip ? 2 : 1;
@@ -84,32 +84,54 @@ class Avatar {
     return this.flip ? -distance : distance;
   }
   update() {
+    this.distance = this.getDistance();
+    // if animation compleated executing
     if (this.currentFrames.length == 0) {
       this.action();
       if (this.opponent.helth == 0) this.gamearea.gameOver(this);
-      this.distance = this.getDistance();
+      // if (this.currentAnimation == "backward") this.moveBackward();
       if (this.currentAnimation == "forward") this.moveForward();
       if (!this.animationFrames) this.setAnimation("idle");
       this.loadAnimation();
     } else if (this.currentFrames.length == 4) {
-      this.hit(this.currentAnimation);
+      this.hit(this.opponent);
     }
-    this.drawImg();
-    this.drawHelth(this.left, 30);
+    this.drawImage();
+    this.drawHelth();
   }
   setAnimation(action) {
     if (action != undefined) {
-      this.animationFrames = {
-        animation: action,
-        frames: [...this.images[action]],
-      };
-      if (this.currentAnimation == "idle") this.currentFrames = [];
+      if (action == "backward") {
+        if (
+          (this.flip && this.position < this.left) ||
+          (!this.flip && this.position > this.left)
+        )
+          this.animationFrames = {
+            animation: action,
+            frames: [...this.images[action]],
+          };
+      } else if (action == "forward") {
+        if (this.distance >= 320) {
+          this.animationFrames = {
+            animation: action,
+            frames: [...this.images[action]],
+          };
+        }
+      } else {
+        this.animationFrames = {
+          animation: action,
+          frames: [...this.images[action]],
+        };
+      }
+      if (this.currentAnimation == "idle" && this.animationFrames != undefined)
+        this.currentFrames = [];
     }
   }
+  // loads the storeed animation
   loadAnimation() {
-    if (this.animationFrames.animation == "backward") this.moveBackward();
     this.currentAnimation = this.animationFrames.animation;
     this.currentFrames = this.animationFrames.frames;
+    if (this.currentAnimation == "backward") this.moveBackward();
     this.animationFrames = undefined;
   }
   moveBackward() {
@@ -120,48 +142,52 @@ class Avatar {
   moveForward() {
     if (this.distance >= 320) this.position += this.moveSpeed;
   }
-  hit() {
-    let point = this.opponent.currentAnimation == "block" ? 2 : 8;
-    if (this.currentAnimation == "kick" || this.currentAnimation == "punch") {
-      if (this.distance <= 200) this.opponent.helth -= point;
-      else if (this.distance <= 320 && this.currentAnimation == "punch")
-        this.opponent.helth -= point / 2;
-    }
-
-    if (this.opponent.helth < 0) this.opponent.helth = 0;
+  // reduces opponents helth
+  hit(opponent) {
+    // if the oppnent has blocked him self, it reduses minum helth
+    let point = opponent.currentAnimation == "block" ? 2 : 8;
+    let helth = 0;
+    if (this.currentAnimation == "kick" && this.distance <= 200) helth = point;
+    else if (this.currentAnimation == "punch" && this.distance <= 320)
+      helth = this.distance <= 200 ? point : point / 2;
+    opponent.helth -= helth;
+    if (opponent.helth < 0) this.opponent.helth = 0;
   }
-  drawImg() {
+  // draws the character
+  drawImage() {
     let img = this.currentFrames.shift();
     let pos = this.position;
-
     // filps if neaded
     if (this.flip) {
-      this.context.scale(-1, 1); // Set scale to flip the imag
-      pos = -this.position - this.side + 230;
+      this.context.scale(-1, 1); // Set scale to flip the image
+      pos = -this.position - this.side + 230; // possition the image accordingly
     }
     this.context.drawImage(img, pos - 80, 20, this.side, this.side);
   }
+  // draws the helth of the character
   drawHelth() {
     let x = this.gamearea.width / 2;
+    x += this.flip ? 5 : -5;
     let y = 30;
     let width = this.flip ? 100 : -100;
     let helth = this.helth;
     let color = "green";
     if (helth <= 20) color = "red";
     else if (helth <= 40) color = "orange";
-    this.context.strikeStyle = "black";
-    this.context.restore();
-    this.context.save();
     if (!this.flip) helth = -helth;
+    this.context.restore(); // restores the blank state context
+    this.context.save(); // stores the blank state context
+    this.context.strikeStyle = "black";
     this.context.fillStyle = color;
     this.context.moveTo(x, y);
-    this.context.fillRect(x, y, helth, 10);
-    this.context.strokeRect(x, y, width, 10);
+    this.context.fillRect(x, y, helth * 2, 20);
+    this.context.strokeRect(x, y, width * 2, 20);
   }
+  // do the required action if the game is not paused
   action() {
-    // the game is not paused
     if (this.gamearea.interval) {
       for (let key in this.gamearea.keys) {
+        key = this.gamearea.keys[key];
         this.setAnimation(this.controls[key.toLowerCase()]);
       }
     }
@@ -232,26 +258,38 @@ src.load((imgs) => {
   generateTable(document.getElementById("help-2"), player2.controls);
 });
 
+// listens for the
 document.onkeydown = (event) => {
   const key = event.key.toLowerCase();
-  myGameArea.keys[key] = key;
-  player1.action();
-  player2.action();
+  // stores the key you pressed
+  if (!myGameArea.keys.includes(key)) myGameArea.keys.push(key);
+  myGameArea.components.forEach((component) => {
+    component.action();
+  });
 };
 
 document.onkeyup = (event) => {
   const key = event.key.toLowerCase();
+  // pauses/play Game
   if (key == " ") myGameArea.start();
-  delete myGameArea.keys[key];
+  // stores the key you relesed
+  delete myGameArea.keys[myGameArea.keys.indexOf(key)];
 };
 
 function generateTable(table, data) {
-  table.style = "margin-left: auto; margin-right: auto;";
+  // table Body
   for (let element in data) {
     let row = table.insertRow();
-    td = row.insertCell();
-    td.innerHTML = element;
-    td = row.insertCell();
-    td.innerHTML = data[element];
+    cell = row.insertCell();
+    cell.innerHTML = element;
+    cell = row.insertCell();
+    cell.innerHTML = data[element];
   }
+  // table Headder
+  headder = table.createTHead();
+  let row = headder.insertRow();
+  cell = row.insertCell();
+  cell.innerHTML = "Key";
+  cell = row.insertCell();
+  cell.innerHTML = "Action";
 }

@@ -1,19 +1,26 @@
 body {
   text-align: center;
 }
-
-.player-1 {
-  float: left;
-  position: absolute;
-  left: 3%;
-  top: 3%;
+table {
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.player-2 {
-  float: right;
+#container {
+  width: "1020";
+  height: "570";
+}
+
+#player-1 {
+  position: absolute;
+  left: 3%;
+  z-index: 2;
+}
+
+#player-2 {
   position: absolute;
   right: 3%;
-  top: 3%;
+  z-index: 2;
 }
 
 .flip-box {
@@ -59,9 +66,4 @@ body {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-}
-
-#pane {
-  float: inline-start;
-  z-index: 1;
 }
