@@ -2,38 +2,61 @@
 <html>
 
 <head>
-  <title>My first Game</title>
+  <title>Kung fu Master</title>
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
   <link rel="stylesheet" href="index.css">
+  <script src="class.js"></script>
+  <script src="source.js"></script>
+
 </head>
 
 <body>
-  <div id="container">
+  <div id="container" class="mx-auto">
     <!-- player 1 help box -->
-    <div id = "player-1" class="flip-box">
-      <div class="flip-box-inner">
-        <div class="flip-box-front">
-          help
-        </div>
-        <div class="flip-box-back">
-          <table id="help-1"></table>
-        </div>
-      </div>
-    </div>
+    <details id="player-1">
+      <summary>help</summary>
+      <table id="help-1"></table>
+    </details>
+    
     <!-- player 2 help box -->
-    <div id="player-2" class="flip-box">
-      <div class="flip-box-inner">
-        <div class="flip-box-front">
-          help
-        </div>
-        <div class="flip-box-back">
-          <table id="help-2"></table>
+    <details id="player-2">
+      <summary>help</summary>
+      <table id="help-2"></table>
+    </details>  
+    
+    <!-- Game area -->
+    <canvas id="myCanvas" class="mx-auto" width="1020" height="570"></canvas>
+    <!-- Menu  -->
+
+    <div class="modal" id="myModal" role="dialog">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header mx-auto">
+            <h3 class="modal-title">Kung fu Master</h3>
+          </div>
+          <div class="modal-body text-center mx-auto">
+            <h3 id="message"></h3>
+            <div id="input">
+              <span><input type="text" placeholder="Player-1" name="Player-1"></span>
+              <span id="vs"> VS </span>
+              <span><input type="text" placeholder="Player-2" name="Player-2"></span>
+            </div>
+            <button type="button" id="play" class="btn btn-success my-2" data-dismiss="modal" onclick="start()">Play</button><br>
+            <button type="button" id="restart" class="btn btn-danger my-2" data-dismiss="modal" onclick="myGameArea.restart()">Restart</button>
+          </div>
+          <div class="modal-footer mx-auto">
+            Press "Space" to pause
+          </div>
         </div>
       </div>
     </div>
-    <!-- Game area -->
-    <canvas id="myCanvas" width="1020" height="570"></canvas>
+
   </div>
-  
   <script src="main.js"></script>
 </body>
 
