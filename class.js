@@ -101,6 +101,7 @@ class Avatar {
     this.position = this.left;
     this.animationFrames = undefined;
     this.currentFrames = [];
+    this.currentAnimation = "";
   }
   // calculates distance between Characters
   getDistance() {
