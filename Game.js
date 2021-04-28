@@ -261,7 +261,6 @@ class Avatar {
       this.action(); 
       if (this.nextAnimation == undefined) {
         this.setAnimation("idle");
-        // console.log(this.nextAnimation);
       }
 
       this.loadAnimation();
