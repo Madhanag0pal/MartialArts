@@ -1,88 +1,175 @@
+/**
+ * Created at 22/04/2021
+ * Auther - Madhanagopal
+ * 
+ */
+
+// if you click outside of the model it should not close
+$("#myModal").modal({backdrop: "static" }); 
+$("#continue").hide();
+$("#restart").hide();
+
+
 var myGameArea = new GameArea("myCanvas");
-var imgSrc = new imageSource();
 var player1 = new Avatar(myGameArea);
 var player2 = new Avatar(myGameArea, true);
-imgSrc.load((images) => {
-  player1.setImages(images);
-  player2.setImages(images);
-});
-myGameArea.addObject(player1);
-myGameArea.addObject(player2);
+var imgSrc = new imageSource();
+
+// loads the image source to players 
+imgSrc.load(player1, player2);
+
+// Add players to game area
+myGameArea.addComponents(player1, player2);
+
+//set Oppenent for each player
 player1.setOpponent(player2);
 player2.setOpponent(player1);
+
+// Set controls for each players
 player1.setControl("a", "d", "s", "w", "e");
 player2.setControl("j", "l", "k", "i", "u");
-generateTable(document.getElementById("help-1"), player1.controls);
-generateTable(document.getElementById("help-2"), player2.controls);
+
+// Generate help for players
+generateTable($("#help-1")[0], player1.controls);
+generateTable($("#help-2")[0], player2.controls);
+
+/**
+ * Purpose - call update function for each components in the gameArea
+ */
 
 function animate() {
+
   myGameArea.context.save(); // stores the blank state context
-  myGameArea.clear();
+
+  myGameArea.clear(); 
+  
   myGameArea.components.forEach((component) => {
     component.update();
   });
+
   myGameArea.context.restore(); // restores the blank state context
+
 }
-let started = false;
+
+/**
+ * Purpose - To start the game
+ */
 function start() {
-  if (!started) {
-    $("input").hide();
-    document.getElementById("play").innerHTML = "Continue";
-    document.getElementById("vs").innerHTML = "";
-    let p1Name = document.getElementsByName("Player-1")[0].value;
-    let p2Name = document.getElementsByName("Player-2")[0].value;
-    if (p1Name && p2Name && p1Name == p2Name) {
-      p1Name += "-1";
-      p2Name += "-2";
-    }
-    if (p1Name) player1.setName(p1Name);
-    if (p2Name) player2.setName(p2Name);
-    console.log(p1Name, p2Name);
+  
+  $("#input").hide();
+  $("#play").hide();
+  // $("#continue").show(); // shows the continue button
+
+  let p1Name = document.getElementsByName("Player-1")[0].value;
+  let p2Name = document.getElementsByName("Player-2")[0].value;
+  
+  if (p1Name && p2Name && p1Name == p2Name) {
+    p1Name += "-1";
+    p2Name += "-2";
   }
+  
+  player1.setName(p1Name);
+  player2.setName(p2Name);
+  
   myGameArea.start();
 }
 
-// listens for the
-document.onkeydown = (event) => {
-  const key = event.key.toLowerCase();
-  // stores the key you pressed
-  if (!myGameArea.keys.includes(key)) myGameArea.keys.push(key);
-  myGameArea.components.forEach((component) => {
-    if (key in component.controls) component.action();
-  });
-};
+/**
+ * Purpose - To Restart the game
+ */
 
-document.onkeyup = (event) => {
-  const key = event.key.toLowerCase();
-  // pauses/play Game
-  if (key == " " && myGameArea.interval) {
-    myGameArea.start();
-  }
-  // stores the key you relesed
-  delete myGameArea.keys[myGameArea.keys.indexOf(key)];
-};
+function restart() {
 
-function generateTable(table, data) {
+  player1.reset();
+  player2.reset();
+  
+  $("#message")[0].innerHTML = "";
+  myGameArea.fightBgm.currentTime = 0; // resets the bgm
+  myGameArea.start();
+
+}
+
+/**
+ * Purpose - Insert table data
+ * @param table:DomObject - is a Dom table element
+ * @param data:object  - data to be written on to the table
+ * @returns nothing
+ */
+
+ function generateTable(table, data) {
   // table Headder
-  headder = table.createTHead();
-  th = document.createElement("th");
-  th.innerHTML = "Key";
-  headder.appendChild(th);
-
-  th = document.createElement("th");
-  th.innerHTML = "Action";
-  headder.appendChild(th);
+  inasrtRow(table, "th", "Key", "Action");
 
   // table Body
   for (let element in data) {
-    let row = table.insertRow();
-    cell = row.insertCell();
-    cell.innerHTML = element;
-    cell = row.insertCell();
-    cell.innerHTML = data[element];
+    inasrtRow(table,"td",element,data[element])
   }
 }
 
-$("#myModal").modal({ backdrop: "static" });
-$("#myModal").modal("show");
-$("#restart").hide();
+/**
+ * @param table:DomTable Element - Table to insert data
+ * @param tagName:string - It should be eaither "th" or "td" 
+ * @param data[]:arrayOfString - data to be filled
+ */
+
+function inasrtRow(table, tagName, ...data) {
+
+  let row = table.insertRow();
+  
+  for (let value of data) {
+
+    let cell = document.createElement(tagName);
+    cell.innerHTML = value;
+    row.appendChild(cell);
+
+  }
+
+}
+
+/**
+ * @keyBoardEvents 
+ */
+
+/**
+ * Purpose - Stores and trigers respective players action 
+ * @event:keydown
+ */
+
+document.onkeydown = (event) => {
+  const key = event.key.toLowerCase();
+  // stores the key you pressed
+  if (myGameArea.interval) {
+    // game is not paused then
+
+    if (key in player1.controls) {
+      player1.keys[key] = player1.controls[key];
+      player1.action();
+    }
+
+    if (key in player2.controls){
+      player2.keys[key] = player2.controls[key];
+      player2.action();
+    } 
+  }
+};
+
+/**
+ * Purpose - delete relesed key
+ * @event:keyup 
+ */
+
+document.onkeyup = (event) => {
+  const key = event.key.toLowerCase();
+  // pauses Game
+  if (key == " " && myGameArea.interval) myGameArea.start();
+
+  // deletes the key you relesed
+  if (key in player1.controls) {
+    delete player1.keys[key];
+  } 
+
+  if (key in player2.controls) {
+    delete player2.keys[key];
+  }
+};
+

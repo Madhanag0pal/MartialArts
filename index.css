@@ -27,6 +27,9 @@ input {
   border-radius: 4px;
   box-sizing: border-box;
 }
+button {
+  width: 300px;
+}
 
 #container {
   width: 1020px;
@@ -35,24 +38,23 @@ input {
 #player-1 {
   position: absolute;
   left: 5%;
+  top: 1%;
   z-index: 2;
   width: 100px;
 }
 #player-2 {
   position: absolute;
   right: 5%;
+  top: 1%;
   z-index: 2;
   width: 100px;
 }
+
 #container {
   background-image: url("images/background.jpg");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-}
-#play,
-#restart {
-  width: 100px;
 }
 #menu {
   width: inherit;
